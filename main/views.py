@@ -9,8 +9,8 @@ from .forms import NewUserForm
         
 def homepage(request):
     return render(request=request,
-                  template_name='main/categories.html',
-                  context={"category": TutorialCategory.objects.all})
+                  template_name='main/home.html',
+                  context={"tutorials": Tutorial.objects.all})
 
 def register(request):
     if request.method == "POST":
