@@ -6,7 +6,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import NewUserForm
 
-        
+# this is the reverted views      
 def homepage(request):
     return render(request=request,
                   template_name='main/home.html',
