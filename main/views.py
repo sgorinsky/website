@@ -12,12 +12,22 @@ def single_slug(request, single_slug):
     if single_slug in categories:
         matching_series = TutorialSeries.objects.filter(tutorial_category__category_slug=single_slug) # this links to the attribute category_slug for out tutorial category that we want to have
 
-        #series_urls = {}
+        series_urls = {}
+        
         for m in matching_series.all():
-            part_one = Tutorial.objects.filter(tutorial_series__tutorial_series=m.tutorial_series)#.earliest(tutorial_published) # based on when we made the tutorial category, we will say that is our first one
-            #series_urls[m] = part_one
+            # iterating though and checking if series obj is linked in table to tutorial obj
+            part_one = Tutorial.objects.filter(tutorial_series__tutorial_series=m.tutorial_series)#.earliest("tutorial_published") # NOTE: if we had more tutorials earliest method would actually work, but unfortunately, there will be some part_ones when iterating through this that could be sorted
+            # if linked, it forms a queryset that we check to see if it has len > 0
+            # if so, we add it to the urls that we can link to
+            if part_one.exists(): # checks to see if we have a match for a tutorial
+                series_urls[m] = part_one[0].tutorial_slug
+            # then we just put a link to nothing, so we can remove that for now
+            #else:
+            #    series_urls[m] = part_one 
             
-        return HttpResponse(f"{single_slug} is a category!!!")
+        return render(request,
+                      "main/category.html",
+                      {"part_ones":series_urls})
     
     tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
     if single_slug in tutorials:

@@ -10,6 +10,7 @@ class TutorialCategory(models.Model):
     class Meta:
         # Gives the proper plural name for admin
         verbose_name_plural = "Categories"
+        
 
     def __str__(self):
         return self.tutorial_category
@@ -21,8 +22,9 @@ class TutorialSeries(models.Model):
     series_summary = models.CharField(max_length=200)
 
     class Meta:
-        # otherwise we get "Tutorial Seriess in admin"
+        # otherwise we get "Tutorial Series in admin"
         verbose_name_plural = "Series"
+        
 
     def __str__(self):
         return self.tutorial_series
