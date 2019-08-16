@@ -20,9 +20,10 @@ app_name = 'main'
 # admin/login/?next=/admin/
 urlpatterns = [
     path("", views.homepage, name = "homepage"),
-    path("register/", views.register, name="register"),
-    path("logout/", views.logout_request, name="logout"),
-    path("login/", views.login_request, name="login"),
+    path("register", views.register, name="register"),
+    path("logout", views.logout_request, name="logout"),
+    path("login", views.login_request, name="login"),
+    path("account", views.account, name="account"),
     path("<single_slug>", views.single_slug, name="single_slug"),
 
 ]
