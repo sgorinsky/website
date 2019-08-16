@@ -31,7 +31,20 @@ def single_slug(request, single_slug):
     
     tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
     if single_slug in tutorials:
-        return HttpResponse(f"{single_slug} is a tutorial!!!")
+        # we want to get the tutorial in the queryset that matches the single_slug then render it
+        this_tutorial = Tutorial.objects.get(tutorial_slug=single_slug)
+        # so this gets us all the Tutorial objects of the same tutorial series
+        tutorial_series = Tutorial.objects.filter(tutorial_series__tutorial_series=this_tutorial.tutorial_series).order_by("tutorial_published")
+
+        # want to get the index of the tutorial we're currently on so we can show it
+        this_tutorial_idx = list(tutorial_series).index(this_tutorial)
+        # then we pass these things to our tutorials.html page and render it
+        return render(request,
+                      "main/tutorial.html",
+                      {"tutorial":this_tutorial,
+                       "sidebar":tutorial_series,
+                       "this_tutorial_idx":this_tutorial_idx})
+        
     return HttpResponse(f"{single_slug} does not correspond to anything")
     
 # this is the reverted views      
