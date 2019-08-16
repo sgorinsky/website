@@ -5,7 +5,50 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import NewUserForm
+
+
+# basically, if the slug (like the /.../ pt of the url) is a category or tutorial, we handle it somehow
+def single_slug(request, single_slug):
+    categories = [c.category_slug for c in TutorialCategory.objects.all()]
+    if single_slug in categories:
+        matching_series = TutorialSeries.objects.filter(tutorial_category__category_slug=single_slug) # this links to the attribute category_slug for out tutorial category that we want to have
+
+        series_urls = {}
+        
+        for m in matching_series.all():
+            # iterating though and checking if series obj is linked in table to tutorial obj
+            part_one = Tutorial.objects.filter(tutorial_series__tutorial_series=m.tutorial_series)#.earliest("tutorial_published") # NOTE: if we had more tutorials earliest method would actually work, but unfortunately, there will be some part_ones when iterating through this that could be sorted
+            # if linked, it forms a queryset that we check to see if it has len > 0
+            # if so, we add it to the urls that we can link to
+            if part_one.exists(): # checks to see if we have a match for a tutorial
+                series_urls[m] = part_one[0].tutorial_slug
+            # then we just put a link to nothing, so we can remove that for now
+            #else:
+            #    series_urls[m] = part_one 
+            
+        return render(request,
+                      "main/category.html",
+                      {"part_ones":series_urls})
+    
+    tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
+    if single_slug in tutorials:
+        # we want to get the tutorial in the queryset that matches the single_slug then render it
+        this_tutorial = Tutorial.objects.get(tutorial_slug=single_slug)
+        # so this gets us all the Tutorial objects of the same tutorial series
+        tutorial_series = Tutorial.objects.filter(tutorial_series__tutorial_series=this_tutorial.tutorial_series).order_by("tutorial_published")
+
+        # want to get the index of the tutorial we're currently on so we can show it
+        this_tutorial_idx = list(tutorial_series).index(this_tutorial)
+        # then we pass these things to our tutorials.html page and render it
+        return render(request,
+                      "main/tutorial.html",
+                      {"tutorial":this_tutorial,
+                       "sidebar":tutorial_series,
+                       "this_tutorial_idx":this_tutorial_idx})
+    return HttpResponse(f"{single_slug} does not correspond to anything")
   
+
+
 # this is the reverted views      
 def homepage(request):
     return render(request=request,
@@ -61,44 +104,3 @@ def login_request(request):
                   "main/login.html",
                   {"form":form})
 
-
-# basically, if the slug (like the /.../ pt of the url) is a category or tutorial, we handle it somehow
-def single_slug(request, single_slug):
-    categories = [c.category_slug for c in TutorialCategory.objects.all()]
-    if single_slug in categories:
-        matching_series = TutorialSeries.objects.filter(tutorial_category__category_slug=single_slug) # this links to the attribute category_slug for out tutorial category that we want to have
-
-        series_urls = {}
-        
-        for m in matching_series.all():
-            # iterating though and checking if series obj is linked in table to tutorial obj
-            part_one = Tutorial.objects.filter(tutorial_series__tutorial_series=m.tutorial_series)#.earliest("tutorial_published") # NOTE: if we had more tutorials earliest method would actually work, but unfortunately, there will be some part_ones when iterating through this that could be sorted
-            # if linked, it forms a queryset that we check to see if it has len > 0
-            # if so, we add it to the urls that we can link to
-            if part_one.exists(): # checks to see if we have a match for a tutorial
-                series_urls[m] = part_one[0].tutorial_slug
-            # then we just put a link to nothing, so we can remove that for now
-            #else:
-            #    series_urls[m] = part_one 
-            
-        return render(request,
-                      "main/category.html",
-                      {"part_ones":series_urls})
-    
-    tutorials = [t.tutorial_slug for t in Tutorial.objects.all()]
-    if single_slug in tutorials:
-        # we want to get the tutorial in the queryset that matches the single_slug then render it
-        this_tutorial = Tutorial.objects.get(tutorial_slug=single_slug)
-        # so this gets us all the Tutorial objects of the same tutorial series
-        tutorial_series = Tutorial.objects.filter(tutorial_series__tutorial_series=this_tutorial.tutorial_series).order_by("tutorial_published")
-
-        # want to get the index of the tutorial we're currently on so we can show it
-        this_tutorial_idx = list(tutorial_series).index(this_tutorial)
-        # then we pass these things to our tutorials.html page and render it
-        return render(request,
-                      "main/tutorial.html",
-                      {"tutorial":this_tutorial,
-                       "sidebar":tutorial_series,
-                       "this_tutorial_idx":this_tutorial_idx})
-    return HttpResponse(f"{single_slug} does not correspond to anything")
-  
